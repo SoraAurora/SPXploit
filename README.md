@@ -9,6 +9,7 @@ Captures JSON Packets incoming , networkk adapter and filter can be changed
 ![image](https://github.com/SoraAurora/SPXploit/assets/91508322/ef633632-0917-4519-855c-c84e54990673)
 
 Functions include :
-1.MYSQL DB enumeration - user , version , table , database
-2.Userdata exfiltration - everything from user table 
-3.modifying product data - any product - allows XSS injection as well to the name/description/brand fields
+
+1. MYSQL DB enumeration - user , version , table , database
+2. Userdata exfiltration - everything from user table 
+3. Modifying product data - any product - allows XSS injection as well to the name/description/brand fields
