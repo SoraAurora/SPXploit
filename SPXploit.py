@@ -106,6 +106,7 @@ def modify_product(product_id,product_name,product_description,product_categoryi
     result = requests.put(f'{WebsiteIP}/product/{product_id}', headers={'Content-Type': 'application/json','authorization':jwt_token}, json=payload_json)
     return result.json()
 
+
 def get_products():
 
     result = requests.get(f'{WebsiteIP}/product', headers={'Content-Type': 'application/json','authorization':jwt_token})
@@ -116,11 +117,6 @@ def find_product_by_id(products, product_id):
         if product['productid'] == product_id:
             return product
     return None
-
-def enum_databases():
-
-    result = requests.get(f'{WebsiteIP}/product', headers={'Content-Type': 'application/json','authorization':jwt_token})
-    return result.json()
 
 def main():
     ascii_logo()
@@ -229,3 +225,4 @@ def ascii_logo():
 
 
 main()
+
